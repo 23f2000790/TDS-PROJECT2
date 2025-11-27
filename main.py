@@ -50,5 +50,5 @@ def read_root():
     return {"message": "LLM Analysis Quiz Agent is running."}
 
 if __name__ == "__main__":
-    logger.info("Starting FastAPI server on http://0.0.0.0:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    logger.info("Starting FastAPI server on http://0.0.0.0:7800")
+    uvicorn.run(app, host="0.0.0.0", port=7860)
