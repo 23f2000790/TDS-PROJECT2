@@ -7,7 +7,6 @@ sdk: docker
 pinned: false
 ---
 
-# LLM Analysis Quiz Agent
+# Quiz Agent
 
-This is an autonomous AI agent built with FastAPI, Playwright, and Google Gemini.
-It solves multi-step data analysis quizzes by scraping, coding, and visualizing data.
+This Space hosts the autonomous data analyst agent.
