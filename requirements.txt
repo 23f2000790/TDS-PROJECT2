@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+google-generativeai
+python-dotenv
+playwright
+pandas
+matplotlib
+requests
+beautifulsoup4
+lxml
+pdfplumber
+pydantic
