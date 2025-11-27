@@ -1,31 +1,36 @@
 # Use Python 3.10
 FROM python:3.10-slim
 
-# 1. Install system tools required for Playwright and general usage
+# 1. Install basic tools
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Setup a new user 'user' (Required for Hugging Face Spaces security)
+# 2. Install Python dependencies (including Playwright) AS ROOT
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
+
+# 3. Install Playwright System Dependencies AS ROOT
+#    (This installs the missing libraries like libglib, libnss3, etc.)
+RUN playwright install-deps
+
+# 4. Setup the non-root user
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
 
-# 3. Set working directory to the user's app directory
+# 5. Set working directory
 WORKDIR $HOME/app
 
-# 4. Install Python dependencies
-COPY --chown=user requirements.txt requirements.txt
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-# 5. Install Playwright Browsers and System Dependencies
+# 6. Install the Browser Binary AS USER
+#    (This ensures the browser is downloaded to /home/user/.cache, accessible by the app)
 RUN playwright install chromium
-RUN playwright install-deps
 
-# 6. Copy the rest of your application code
+# 7. Copy the application code
+#    (We use --chown because we are already the 'user')
 COPY --chown=user . .
 
-# 7. Start the FastAPI server on port 7860
+# 8. Start the server
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
