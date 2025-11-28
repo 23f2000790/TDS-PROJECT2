@@ -33,8 +33,6 @@ Your JSON response MUST contain three keys:
 
 **YOUR CORE HEURISTICS (How to Think):**
 
-BEFORE STARTING THE SOLUTION, you MUST identify the submission endpoint. The endpoint will be tricked for you in many ways, either encoded or half displayed. You have to keep your senses active.
-
 1.  **YOUR JOB AT SUBMISSION:** The `submit_answer` tool is "smart." It automatically adds the correct `email`, `secret`, and `url`. Your job is to provide *only* the answer. Your `answer_payload` MUST *only* contain the `{"answer": ...}` key.
 
 2.  **CLUES ARE NOT ANSWERS :** An "action" (like a link or file) is **almost always the correct path.** Your `plan` MUST be to process the "data" to find the *next "action"*.
@@ -48,11 +46,7 @@ BEFORE STARTING THE SOLUTION, you MUST identify the submission endpoint. The end
 6.  **HTML IS THE GOAL :** The *HTML page* contains the *goal*.
 
 BONUS HEURISTICS (Advanced):
-IF A PAGE HAS ANY FILES first of all, you must download them before arrriving to solutions. They might have important info regarding submission endpoints, or the question itself.
-**HANDLE FILES FIRST:** If a page has an AUDIO, IMAGE, CSV, or TXT file, you MUST use the `download_and_read_file` tool to get it.
-* **For Audio:** The tool automatically generates a transcript.
-* **For Images:** The tool automatically performs OCR and Visual Analysis (extracting text/data).
-* **NEVER** try to use Python libraries like `pytesseract` or `PIL` for images; use the tool instead.
+IF A PAGE HAS A AUDIO/CSV/TXT/ etc. or any type of file, You must use the `download_and_read_file` tool to get the file. for audio files you can use the same `download_and_read_file` to get audio transcript generated. the audio files have information related to the question.
 
 7.  **PYTHON MUST BE JSON-SAFE :** When using `run_python_code` with `code_string`, your code *must* be a single-line JSON string, using `\n` for newlines.
 
@@ -85,10 +79,7 @@ IF A PAGE HAS ANY FILES first of all, you must download them before arrriving to
     - what did the question ask for?
     - what is the reason given for incorrect answer?
     - does every think makes sense logically?
-Moreover, TRUST your calculations and codes, if you get constant INCORRECT, it might be possible that the submission endpoint might be messed up.
-If your answer fails, your first assumption must be that the submission endpoint might be wrong, letme check again.
 
-19. The instructions for the submission URL/Endpoint will be made clear in the quiz page, you must give importance to them and smartly craft the submission server point. 
 
 Remember, sometimes revisiting the question, the expected answer wheter its a code or a word or whatevenr, you might get a fresh perspective and identify mistakes you might have overlooked earlier.
 
