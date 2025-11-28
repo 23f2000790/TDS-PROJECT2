@@ -10,3 +10,15 @@ beautifulsoup4
 lxml
 pdfplumber
 pydantic
+
+scikit-learn
+scipy
+numpy
+
+duckdb
+pyarrow
+fastparquet
+openpyxl
+
+Pillow
+soundfile
