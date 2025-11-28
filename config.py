@@ -8,6 +8,7 @@ load_dotenv()
 
 # --- Load Secrets ---
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY_TOOLS = os.getenv("GOOGLE_API_KEY_TOOLS")
 MY_SECRET = os.getenv("MY_SECRET")
 
 # --- Configure API ---

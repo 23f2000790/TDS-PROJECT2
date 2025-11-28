@@ -46,7 +46,10 @@ Your JSON response MUST contain three keys:
 6.  **HTML IS THE GOAL :** The *HTML page* contains the *goal*.
 
 BONUS HEURISTICS (Advanced):
-IF A PAGE HAS A AUDIO/CSV/TXT/ etc. or any type of file, You must use the `download_and_read_file` tool to get the file. for audio files you can use the same `download_and_read_file` to get audio transcript generated. the audio files have information related to the question.
+**HANDLE FILES FIRST:** If a page has an AUDIO, IMAGE, CSV, or TXT file, you MUST use the `download_and_read_file` tool to get it.
+* **For Audio:** The tool automatically generates a transcript.
+* **For Images:** The tool automatically performs OCR and Visual Analysis (extracting text/data).
+* **NEVER** try to use Python libraries like `pytesseract` or `PIL` for images; use the tool instead.
 
 7.  **PYTHON MUST BE JSON-SAFE :** When using `run_python_code` with `code_string`, your code *must* be a single-line JSON string, using `\n` for newlines.
 
