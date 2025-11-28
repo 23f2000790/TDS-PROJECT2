@@ -56,6 +56,7 @@ def download_and_read_file(url: str) -> str:
     - JS/Logic -> temp_utils.js
     - CSV/Text/Log -> temp_data.csv
     - Audio -> Transcribes via Gemini API
+    - Images -> OCR/Description via Gemini Vision
     """
     logger.info(f"Tool: download_and_read_file - URL: {url}")
     try:
@@ -69,7 +70,7 @@ def download_and_read_file(url: str) -> str:
             try:
                 api_key = os.getenv("GOOGLE_API_KEY_TOOLS")
                 if not api_key:
-                    return "Error: GOOGLE_API_KEY not found in environment variables."
+                    return "Error: GOOGLE_API_KEY_TOOLS not found in environment variables."
                 
                 genai.configure(api_key=api_key)
 
@@ -94,7 +95,36 @@ def download_and_read_file(url: str) -> str:
                 logger.error(f"Gemini Transcription Error: {e}")
                 return f"Error transcribing audio: {e}"
 
-        # --- 2. Consolidated File Naming (Existing Logic) ---
+        # --- 2. Handle Images (OCR/Vision) [NEW INTEGRATION] ---
+        elif 'image' in content_type or url.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+            logger.info("Image detected. Analyzing via Gemini Vision...")
+            try:
+                # Reuse the same API key variable as the original code
+                api_key = os.getenv("GOOGLE_API_KEY_TOOLS")
+                if not api_key:
+                    return "Error: GOOGLE_API_KEY_TOOLS not found in environment variables."
+
+                genai.configure(api_key=api_key)
+
+                temp_filename = "temp_media_input.png"
+                with open(temp_filename, 'wb') as f: 
+                    f.write(response.content)
+                
+                media_file = genai.upload_file(path=temp_filename)
+                model = genai.GenerativeModel(model_name="gemini-2.5-flash")
+                
+                prompt = (
+                    "Analyze this image. 1. Transcribe any text or numbers visible exactly. "
+                    "2. If it is a chart/graph, describe the x-axis, y-axis, and data points. "
+                    "3. If it is a secret code or captcha, state it clearly."
+                )
+                result = model.generate_content([prompt, media_file])
+                return f"Image Analysis (OCR & Description):\n{result.text}"
+            except Exception as e:
+                logger.error(f"Gemini Vision Error: {e}")
+                return f"Error analyzing image: {e}"
+
+        # --- 3. Consolidated File Naming (Existing Logic) ---
         filename = 'temp_downloaded_file' # Fallback
         
         if 'javascript' in content_type or url.lower().endswith('.js'):
@@ -104,8 +134,13 @@ def download_and_read_file(url: str) -> str:
         elif ('csv' in content_type or 'text' in content_type or 
               url.lower().endswith(('.csv', '.txt', '.log'))):
             filename = 'temp_data.csv'
+        # Fix for Databases/Zips
+        elif url.lower().endswith(('.db', '.sqlite', '.sqlite3')):
+            filename = 'temp_data.db'
+        elif url.lower().endswith('.zip'):
+            filename = 'temp_data.zip'  
         
-        # --- 3. Handle Text-based files ---
+        # --- 4. Handle Text-based files ---
         if any(x in content_type for x in ['text', 'javascript', 'json', 'csv']):
             text_content = response.text
             with open(filename, 'w', encoding='utf-8') as f:
@@ -114,7 +149,7 @@ def download_and_read_file(url: str) -> str:
             preview = "\n".join(text_content.splitlines()[:10])
             return f"File saved as '{filename}'. Preview:\n{preview}"
             
-        # --- 4. Handle PDF ---
+        # --- 5. Handle PDF ---
         elif 'application/pdf' in content_type:
             with io.BytesIO(response.content) as f:
                 with pdfplumber.open(f) as pdf:
@@ -130,7 +165,9 @@ def download_and_read_file(url: str) -> str:
             return "File is video. Ignored."
         
         else:
-            return f"File type {content_type} not supported for direct reading."
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            return f"Binary file saved as '{filename}'. Content not displayed."
 
     except Exception as e:
         logger.error(f"Tool: download_and_read_file - Error: {e}")
