@@ -65,7 +65,7 @@ def download_and_read_file(url: str) -> str:
         content_type = response.headers.get('content-type', '').lower()
         
         # Setup Gemini if needed
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = os.getenv("GOOGLE_API_KEY_TOOLS")
         if api_key: genai.configure(api_key=api_key)
 
         # --- 1. Handle Audio ---
@@ -196,21 +196,15 @@ def run_python_code(code_string: str = None, filename: str = None) -> str:
 def submit_answer(submit_url: str, answer_payload: dict, email: str, secret: str, task_url: str) -> str:
     logger.info(f"Tool: submit_answer - URL: {submit_url}")
     try:
-        # Sanitize payload
+        # --- CRITICAL FIX ---
+        # Remove 'secret', 'email', 'url' from agent's payload to prevent overwriting
         safe_payload = {k: v for k, v in answer_payload.items() if k not in ['email', 'secret', 'url']}
         
-        # Auto-convert numeric strings
-        if 'answer' in safe_payload:
-            ans = safe_payload['answer']
-            if isinstance(ans, str) and ans.replace('.', '', 1).isdigit():
-                if '.' in ans: safe_payload['answer'] = float(ans)
-                else: safe_payload['answer'] = int(ans)
-
         final_payload = {
             "email": email,
-            "secret": secret,
+            "secret": secret, # <--- THIS MUST BE THE ARGUMENT FROM ENV
             "url": task_url,
-            **safe_payload 
+            **safe_payload    # <--- Agent's answer is merged here
         }
         
         response = requests.post(submit_url, json=final_payload, timeout=NETWORK_TIMEOUT)
