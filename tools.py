@@ -248,10 +248,27 @@ def run_python_code(code_string: str = None, filename: str = None) -> str:
 def submit_answer(submit_url: str, answer_payload: dict, email: str, secret: str, task_url: str) -> str:
     logger.info(f"Tool: submit_answer - URL: {submit_url}")
     try:
+        if 'answer' in answer_payload and isinstance(answer_payload['answer'], str):
+            val = answer_payload['answer']
+            if val.startswith("FILE:"):
+                filename = val.replace("FILE:", "").strip()
+                logger.info(f"Reading answer from file: {filename}")
+                try:
+                    with open(filename, 'r', encoding='utf-8') as f:
+                        answer_payload['answer'] = f.read().strip()
+                except Exception as e:
+                    return f"Error reading answer file {filename}: {e}"
+                
         # --- CRITICAL FIX ---
         # Remove 'secret', 'email', 'url' from agent's payload to prevent overwriting
         safe_payload = {k: v for k, v in answer_payload.items() if k not in ['email', 'secret', 'url']}
         
+        if 'answer' in safe_payload:
+            ans = safe_payload['answer']
+            if isinstance(ans, str) and ans.replace('.', '', 1).isdigit():
+                if '.' in ans: safe_payload['answer'] = float(ans)
+                else: safe_payload['answer'] = int(ans)
+
         final_payload = {
             "email": email,
             "secret": secret, # <--- THIS MUST BE THE ARGUMENT FROM ENV

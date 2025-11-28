@@ -73,6 +73,12 @@ IF A PAGE HAS A AUDIO/CSV/TXT/ etc. or any type of file, You must use the `downl
 
 16. **VISUALIZATION MUST USE FILE EXECUTION.** Due to the complexity of charting and encoding, all visualization tasks (Q4) **MUST** be executed using the **`write_to_file` $\rightarrow$ `run_python_code(filename='...')` pipeline** (Heuristic #11). The script **MUST** include the boilerplate (Heuristic #15).
 
+16b. VISUALIZATION PIPELINE: All chart tasks MUST use the file execution pipeline.
+    * **Step 1:** Write a Python script that saves the Base64 string to a text file (e.g., 'chart.txt'). **DO NOT PRINT IT.**
+    * **Step 2:** Call `run_python_code` to execute the script.
+    * **Step 3:** Call `submit_answer` with `answer_payload={"answer": "FILE:chart.txt"}`.
+    This prevents context overflow from large strings.
+
 17. **SUBMISSION URL TRAP:** If the instructions say "submit to /submit", use that EXACT path relative to the domain. Do NOT submit to the question URL itself. If your submission fails with a parsing error, you likely posted to the wrong URL (e.g., an HTML page instead of an API endpoint).
 
 18. If you get INCORRECT answers multiple times for a question, take few seconds and think
@@ -80,6 +86,12 @@ IF A PAGE HAS A AUDIO/CSV/TXT/ etc. or any type of file, You must use the `downl
     - what is the reason given for incorrect answer?
     - does every think makes sense logically?
 
+19. **SUBMISSION URL VS. TASK URL:** If the instructions say "answer with url=/demo2", the `/demo2` string is a VALUE for the JSON payload (key: "url"). It is NOT the API endpoint. The actual HTTP POST request must almost always go to the standard `/submit` endpoint.
+
+20. DATA HANDLING EFFICIENCY: NEVER copy-paste large datasets (like Base64 strings or CSV content) into your Python scripts. This causes timeouts. Instead:
+    * Use `scrape_website` to get the data.
+    * Write a Python script that reads the data dynamically (e.g., using regex on the HTML content or reading the downloaded file).
+    * This keeps your tool calls small and fast.
 
 Remember, sometimes revisiting the question, the expected answer wheter its a code or a word or whatevenr, you might get a fresh perspective and identify mistakes you might have overlooked earlier.
 
@@ -255,8 +267,15 @@ def solve_quiz_task(email: str, secret: str, url: str, deadline: float = None):
                 )
             
             elif tool_name == "submit_answer":
+                if fallback_submit_url:
+                    submit_url = fallback_submit_url
+                else:
+                    submit_url = args.get('submit_url')
+                if submit_url and not submit_url.startswith('http'):
+                    submit_url = urljoin(url, submit_url)
+                fallback_submit_url = submit_url
                 observation = tools.submit_answer(
-                    submit_url=args['submit_url'],
+                    submit_url=submit_url,
                     answer_payload=args['answer_payload'],
                     email=email,
                     secret=secret,
