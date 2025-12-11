@@ -252,7 +252,11 @@ def download_and_read_file(url: str, save_as: str = None) -> str:
 
         # --- JSON FILES ---
         elif 'json' in content_type or url.lower().endswith('.json'):
-            filename = 'temp_data.json'
+            # Use save_as if provided, otherwise default
+            if save_as:
+                filename = save_as
+            else:
+                filename = 'temp_data.json'
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(response.text)
             
@@ -265,7 +269,10 @@ def download_and_read_file(url: str, save_as: str = None) -> str:
 
         # --- CSV/TEXT FILES ---
         elif 'csv' in content_type or 'text' in content_type or url.lower().endswith(('.csv', '.txt', '.log')):
-            if url.lower().endswith('.csv') or 'csv' in content_type:
+            # Use save_as if provided, otherwise default based on type
+            if save_as:
+                filename = save_as
+            elif url.lower().endswith('.csv') or 'csv' in content_type:
                 filename = 'temp_data.csv'
             else:
                 filename = 'temp_data.txt'

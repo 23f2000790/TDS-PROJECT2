@@ -151,6 +151,23 @@ Respond with ONLY a valid JSON object:
 
 7. **Don't Retry the Same Thing:** If an answer is wrong, the approach is wrong. Try a DIFFERENT interpretation, not the same code again.
 
+8. **Tool Call JSON Plans:** When asked to create a JSON plan/array of tool calls:
+   - Read the tool schemas in the provided JSON file VERY carefully
+   - Use EXACT parameter names from the schema (case-sensitive)
+   - For parameters that reference output from previous tools, DON'T use template syntax like `{{variable}}`
+   - Instead, use the exact reference format shown in the schema (e.g., `"text": "$fetch_issue.output"` or simply omit if the tool chains automatically)
+   - Check if parameters should be strings or integers (e.g., `"id": 42` vs `"id": "42"`)
+   - The `query` parameter for search tools should match the task description closely
+
+9. **File Naming:** When you download a file with `save_as` parameter, remember the exact filename you used.
+   - Downloaded files go to the working directory
+   - If you use `save_as="orders.csv"`, the file will be `orders.csv` NOT `temp_data.csv`
+   - Always use the same filename in subsequent `read_file` or `run_python_code` operations
+
+10. **Start/Initial Questions:** Some quizzes start with a warm-up question that accepts any non-empty answer.
+    - Try "start" or any simple string - don't submit empty strings
+    - Empty string submissions often fail with "Missing field answer"
+
 Your entire response must be valid JSON. No text outside the JSON object.
 """
 
