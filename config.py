@@ -26,7 +26,7 @@ logging.basicConfig(
     format="%(asctime)s - [%(levelname)s] - (%(module)s.%(funcName)s) - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
-        logging.FileHandler("test_run.log"), # Separate log file for testing
+        logging.FileHandler("test_run.log", encoding="utf-8"),
         logging.StreamHandler()
     ]
 )

@@ -22,3 +22,4 @@ openpyxl
 
 Pillow
 soundfile
+python-dateutil
